@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FIFA OVR Guessing Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background: url('stadium-background.jpg') no-repeat center center fixed;
+            background-size: cover;
+            overflow: hidden;
+            color: white;
+        }
+        .card {
+            width: 300px;
+            margin: 50px auto;
+            position: relative;
+            background: linear-gradient(135deg, #3a1c71, #d76d77, #ffaf7b); /* Default gradient */
+            border-radius: 15px;
+            padding: 20px;
+            color: white;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+        }
+        .player-photo {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border: 2px solid white;
+            margin-bottom: 10px;
+        }
+        .player-name {
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+        .attributes {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            text-align: left;
+            margin-top: 10px;
+        }
+        .attribute {
+            font-size: 1.1em;
+        }
+        .blurred-ovr {
+            font-size: 3em;
+            font-weight: bold;
+            margin-top: 10px;
+            text-shadow: 2px 2px 5px black;
+        }
+        .timer {
+            font-size: 1.5em;
+            margin: 20px;
+            color : #ffcc00;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px 0 rgba(0,0,0,0.7);
+        }
+        #final-score {
+            display: none;
+            font-size: 2em;
+            margin-top: 50px;
+        }
+    </style>
+</head>
+<body>
+    <div id="game">
+        <div class="timer" id="timer">Time Left: 20s</div>
+        <div class="card" id="card">
+            <img id="player-photo" class="player-photo" src="player1.jpg" alt="Player Photo">
+            <div class="player-name" id="player-name">Player Name</div>
+            <div class="blurred-ovr" id="blurred-ovr">??</div>
+            <div class="attributes">
+                <div class="attribute">PAC: <span id="pac">85</span></div>
+                <div class="attribute">SHO: <span id="sho">92</span></div>
+                <div class="attribute">PAS: <span id="pas">91</span></div>
+                <div class="attribute">DRI: <span id="dri">95</span></div>
+                <div class="attribute">DEF: <span id="def">34</span></div>
+                <div class="attribute">PHY: <span id="phy">65</span></div>
+            </div>
+        </div>
+        <div>
+            <input type="number" id="guess" placeholder="Guess the OVR" />
+            <button onclick="submitGuess()">Submit</button>
+        </div>
+    </div>
+    <div id="final-score">Your Final Score: <span id="score">0</span></div>
+    <script>
+        // Player class
+        class Player {
+            constructor(name, ovr, pac, sho, pas, dri, def, phy, photo, background) {
+                this.name = name;
+                this.ovr = ovr;
+                this.pac = pac;
+                this.sho = sho;
+                this.pas = pas;
+                this.dri = dri;
+                this.def = def;
+                this.phy = phy;
+                this.photo = photo;
+                this.background = background;
+            }
+        }
+
+        // Player data
+        const players = [
+            new Player("Lionel Messi", 93, 85, 92, 91, 95, 34, 65, "messi.jpg", "linear-gradient(135deg, #3a1c71, #d76d77, #ffaf7b)"),
+            new Player("Cristiano Ronaldo", 92, 88, 93, 82, 89, 40, 77, "ronaldo.jpg", "linear-gradient(135deg, #1e3c72, #2a5298)"),
+            new Player("Kylian Mbappé", 91, 96, 86, 80, 92, 37, 78, "mbappe.jpg", "linear-gradient(135deg, #ff7e5f, #feb47b)"),
+        ];
+
+        let currentPlayerIndex = 0;
+        let timeLeft = 20;
+        let score = 0;
+        let guessCount = 0; // Tracks number of guesses for the current card
+
+        // DOM elements
+        const timerElement = document.getElementById('timer');
+        const playerNameElement = document.getElementById('player-name');
+        const playerPhotoElement = document.getElementById('player-photo');
+        const blurredOvrElement = document.getElementById('blurred-ovr');
+        const pacElement = document.getElementById('pac');
+        const shoElement = document.getElementById('sho');
+        const pasElement = document.getElementById('pas');
+        const driElement = document.getElementById('dri');
+        const defElement = document.getElementById('def');
+        const phyElement = document.getElementById('phy');
+        const cardElement = document.getElementById('card');
+        const finalScoreElement = document.getElementById('final-score');
+        const scoreElement = document.getElementById('score');
+
+        // Timer
+        const timer = setInterval(() => {
+            timeLeft--;
+            timerElement.textContent = `Time Left: ${timeLeft}s`;
+            if (timeLeft === 0) {
+                alert("Time's up! Game over!");
+                location.reload();
+            }
+        }, 1000);
+
+        // Load player data
+        function loadPlayer(player) {
+            playerNameElement.textContent = player.name;
+            playerPhotoElement.src = player.photo;
+            blurredOvrElement.textContent = "??";
+            pacElement.textContent = player.pac;
+            shoElement.textContent = player.sho;
+            pasElement.textContent = player.pas;
+            driElement.textContent = player.dri;
+            defElement.textContent = player.def;
+            phyElement.textContent = player.phy;
+            cardElement.style.background = player.background;
+            guessCount = 0; // Reset guesses
+        }
+
+        // Submit guess
+        function submitGuess() {
+            const guess = document.getElementById('guess').value;
+            const currentPlayer = players[currentPlayerIndex];
+
+            if (parseInt(guess) === currentPlayer.ovr) {
+                let points = guessCount === 0 ? 10 : guessCount === 1 ? 5 : 2;
+                score += points;
+                alert(`Correct! You earned ${points} points.`);
+                nextPlayer();
+            } else {
+                guessCount++;
+                if (guessCount >= 3) {
+                    alert("Wrong guesses exceeded! Moving to the next player.");
+                    nextPlayer();
+                } else {
+                    alert("Wrong! Try again.");
+                }
+            }
+        }
+
+        // Load the next player
+        function nextPlayer() {
+            currentPlayerIndex++;
+            if (currentPlayerIndex >= players.length) {
+                clearInterval(timer);
+                document.getElementById('game').style.display = 'none';
+                finalScoreElement.style.display = 'block';
+                scoreElement.textContent = score;
+            } else {
+                timeLeft = 20; // Reset timer
+                loadPlayer(players[currentPlayerIndex]);
+            }
+        }
+
+        // Initialize game
+        loadPlayer(players[currentPlayerIndex]);
+    </script>
+</body>
+</html>

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>
+            guess the number
+        </title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                background-color: #ecc4c4;
+                text-align: center;
+                padding: 50px;
+            }
+            h1{
+                color: #333;
+            }
+
+            #game{
+                background: #fff;
+                padding: 20px;
+                border-radius: 10px;
+                box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            }
+            #message{
+                margin-bottom: 20px;
+                font-size: 18px;
+                color: #333;
+            }
+            .hidden {
+                display: none;
+            }
+        </style>
+    </head>
+    <body>
+
+        <h1>Guess The Number Game</h1>
+        <div class="game">
+            <p id="message"></p>
+            <input type="number" id="userInput" placeholder="Enter a number b/w 1 to 100">
+            <button id="guess" onclick="guessNumber()">guess</button>
+            <button id="restartButton" class="hidden" onclick="restartGame()">Restart Game</button>
+        </div>
+        <script>
+            let count =1;
+            let num = Math.floor(Math.random() * (100 -1)) + 1;
+            document.getElementById('message').textContent = checkPrime(num);
+            function guessNumber(){
+                const userNum = Number(document.getElementById('userInput').value);
+                const message = document.getElementById('message');
+
+                if(userNum > num){
+                    message.textContent = "YOU ARE GETTING FAR FROM THE NUMBER! TRY AGAIN 😒😂😂😂";
+                    message.style.color = 'green';
+                }
+                else if(userNum < num){
+                    message.textContent = "YOU ENTERED A SMALLER NUMBER! 😒🤣🤣🤣🤣";
+                    message.style.color = 'red';
+                }
+                else{
+                    message.textContent = `YOU ENTERED THE CORRECT IN ${count} TIMES . `;
+                    if(count <= 3){
+                        message.textContent += "YOU ARE LEGEND 🫡🫡🫡🫡🫡."
+                    }
+                    else if(count <= 6){
+                        message.textContent += "YOU'RE A GOOD PLAYER, KEEP ON 😊😊😊😘."
+                    }
+                    else{
+                        message.textContent += "WELL PLAYED, BETTER LUCK NEXT TIME 😒😒😒😒😒."
+                    }
+                    message.style.color = 'blue';
+                    guess.disabled = true;
+                    restartButton.classList.remove('hidden');
+                }
+                count++;
+            }
+            function restartGame(){
+                count = 1;
+                num = Math.floor(Math.random() * (100 - 1)) + 1; 
+                document.getElementById('message').textContent = checkPrime(num); 
+                document.getElementById('message').style.color = '#333'; 
+                document.getElementById('userInput').value = ''; 
+                document.getElementById('guessButton').disabled = true; 
+                document.getElementById('restartButton').classList.add('hidden');
+                guessNumber();
+            }
+        </script>
+    </body>
